@@ -18,14 +18,14 @@ Since `gdocs` is not yet published to PyPI, you can install it directly from the
 
 ### Using pip
 ```bash
-pip install git+[https://github.com/chintu4/gdocs.git](https://github.com/chintu4/gdocs.git)
+pip install git+https://github.com/chintu4/gdocs.git
 
 ```
 
 ### Using uv
 
 ```bash
-uv pip install git+[https://github.com/chintu4/gdocs.git](https://github.com/chintu4/gdocs.git)
+uv pip install git+https://github.com/chintu4/gdocs.git
 
 ```
 
