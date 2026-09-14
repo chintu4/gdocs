@@ -21,14 +21,14 @@ Since `gdocs` is currently in development and not yet published to PyPI, you can
 
 ### Using pip
 ```bash
-pip install git+https://github.com/chintu4/gdocs.git
+pip install git+[https://github.com/chintu4/gdocs.git](https://github.com/chintu4/gdocs.git)
 
 ```
 
 ### Using uv
 
 ```bash
-uv pip install git+https://github.com/chintu4/gdocs.git
+uv pip install git+[https://github.com/chintu4/gdocs.git](https://github.com/chintu4/gdocs.git)
 
 ```
 
@@ -60,17 +60,16 @@ This opens a browser for you to sign in. `gdocs` will automatically detect and u
 Extract text from a full document, automatically parsing all tabs and nested tables:
 
 ```python
-from gdocs.main import GoogleDocsService, extract_doc_id
+from gdocs.main import GoogleDocsService
 
-# You can pass a full URL or just the ID
-DOCUMENT_URL = https://docs.google.com/document/d/1aBcD_eFgHiJkLmNoPqRsTuVwXyZ/edit"
-doc_id = extract_doc_id(DOCUMENT_URL)
+# You can pass a full URL or just the ID directly!
+DOCUMENT_URL = "[https://docs.google.com/document/d/1aBcD_eFgHiJkLmNoPqRsTuVwXyZ/edit](https://docs.google.com/document/d/1aBcD_eFgHiJkLmNoPqRsTuVwXyZ/edit)"
 
 # Initialize the service (Handles auth automatically)
 docs_service = GoogleDocsService()
 
 # Read the entire document
-text = docs_service.read_document(doc_id)
+text = docs_service.read_document(DOCUMENT_URL)
 print(text)
 
 ```
@@ -81,13 +80,13 @@ If your document utilizes Google Docs Tabs:
 
 ```python
 # Get a dictionary mapping {tab_id: tab_title}
-tabs = docs_service.get_tabs_info(doc_id)
+tabs = docs_service.get_tabs_info(DOCUMENT_URL)
 print(tabs)
 
 # Read a specific tab only
 if tabs:
     first_tab_id = list(tabs.keys())[0]
-    tab_text = docs_service.read_specific_tab(doc_id, target_tab_id=first_tab_id)
+    tab_text = docs_service.read_specific_tab(DOCUMENT_URL, target_tab_id=first_tab_id)
 
 ```
 
@@ -97,13 +96,13 @@ Perfect for AI agents generating and logging content:
 
 ```python
 # Append text to the very bottom of the document
-docs_service.append_text(doc_id, text="\n\nAI Summary: This is an automated summary.")
+docs_service.append_text(DOCUMENT_URL, text="\n\nAI Summary: This is an automated summary.")
 
 # Insert text at the very beginning
-docs_service.insert_text_at_start(doc_id, text="CONFIDENTIAL DRAFT\n")
+docs_service.insert_text_at_start(DOCUMENT_URL, text="CONFIDENTIAL DRAFT\n")
 
 # Replace template variables (e.g., replacing '{{NAME}}' with 'Alice')
-docs_service.replace_text(doc_id, search_string="{{NAME}}", replacement_string="Alice")
+docs_service.replace_text(DOCUMENT_URL, search_string="{{NAME}}", replacement_string="Alice")
 
 ```
 
