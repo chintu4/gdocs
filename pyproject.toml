@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gdocs"
+version = "0.1.0"
+authors = [
+  { name="Chintu Sharma", email="chintusharma3388@gmail.com" },
+]
+description = "docs package to work with google docs in colab or out side of colab making programming easiy even authentication"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    # "requests>=2.31.0", # Add your dependencies here
+]
+
+[project.urls]
+"Homepage" = "https://github.com/chintu4/gdocs"
+"Bug Tracker" = "https://github.com/chintu4/gdocs/issues"
