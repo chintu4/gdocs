@@ -32,10 +32,6 @@ class DefaultAuthStrategy(AuthStrategy):
             logger.info("Authenticated using local Application Default Credentials.")
             return creds
 
-
-# ---------------------------------------------------------
-# INTERNAL UTILITY FUNCTIONS
-# ---------------------------------------------------------
 def _extract_doc_id(url_or_id: str) -> str:
     """INTERNAL: Extracts the Doc ID from a URL, or returns the ID if already clean."""
     if not url_or_id:
@@ -43,10 +39,6 @@ def _extract_doc_id(url_or_id: str) -> str:
     match = re.search(r"/d/([a-zA-Z0-9-_]+)", url_or_id)
     return match.group(1) if match else url_or_id
 
-
-# ---------------------------------------------------------
-# FACADE PATTERN: Google Docs API Service
-# ---------------------------------------------------------
 class GoogleDocsService:
     def __init__(self, auth_strategy: Optional[AuthStrategy] = None):
         self._auth_strategy = auth_strategy or DefaultAuthStrategy()
