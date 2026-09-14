@@ -8,30 +8,18 @@ import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# 1. PROPER LIBRARY LOGGING
-# We create a logger specific to this module and add a NullHandler.
-# This prevents our library from printing logs unless the user explicitly configures logging in their app.
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-# Suppress noisy Google API logs
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 logging.getLogger('google_auth_httplib2').setLevel(logging.ERROR)
 
-# ---------------------------------------------------------
-# STRATEGY PATTERN: Authentication
-# ---------------------------------------------------------
 class AuthStrategy(ABC):
-    """Abstract base class for authentication strategies."""
     @abstractmethod
     def get_credentials(self) -> Any:
         pass
 
 class DefaultAuthStrategy(AuthStrategy):
-    """
-    Attempts to intelligently authenticate using Colab if available, 
-    otherwise falls back to local Application Default Credentials.
-    """
     def get_credentials(self) -> Any:
         try:
             from google.colab import auth
@@ -46,10 +34,10 @@ class DefaultAuthStrategy(AuthStrategy):
 
 
 # ---------------------------------------------------------
-# UTILITY FUNCTIONS (Moved outside the class)
+# INTERNAL UTILITY FUNCTIONS
 # ---------------------------------------------------------
-def extract_doc_id(url_or_id: str) -> str:
-    """Extracts the Google Doc ID from a full URL, or returns the ID if already clean."""
+def _extract_doc_id(url_or_id: str) -> str:
+    """INTERNAL: Extracts the Doc ID from a URL, or returns the ID if already clean."""
     if not url_or_id:
         raise ValueError("Provided URL or ID is empty.")
     match = re.search(r"/d/([a-zA-Z0-9-_]+)", url_or_id)
@@ -60,19 +48,12 @@ def extract_doc_id(url_or_id: str) -> str:
 # FACADE PATTERN: Google Docs API Service
 # ---------------------------------------------------------
 class GoogleDocsService:
-    """
-    A unified service class to handle Google Docs API operations.
-    Uses Dependency Injection for authentication.
-    """
-    # 2. DEPENDENCY INJECTION
-    # We pass the auth strategy in, defaulting to our smart DefaultAuthStrategy.
     def __init__(self, auth_strategy: Optional[AuthStrategy] = None):
         self._auth_strategy = auth_strategy or DefaultAuthStrategy()
         self._client = None
 
     @property
     def client(self):
-        """Lazy initialization of the Google Docs API client."""
         if self._client is None:
             creds = self._auth_strategy.get_credentials()
             try:
@@ -81,9 +62,10 @@ class GoogleDocsService:
                 raise RuntimeError(f"Failed to build Google Docs service: {e}")
         return self._client
 
-    def get_tab_names(self, document_id: str) -> List[str]:
+    def get_tab_names(self, url_or_id: str) -> List[str]:
+        doc_id = _extract_doc_id(url_or_id)
         try:
-            document = self.client.documents().get(documentId=document_id).execute()
+            document = self.client.documents().get(documentId=doc_id).execute()
             tabs = document.get('tabs', [])
             tab_names = []
             
@@ -106,9 +88,10 @@ class GoogleDocsService:
             logger.error(f"An unexpected error occurred: {e}")
             return []
 
-    def get_tabs_info(self, document_id: str) -> Dict[str, str]:
+    def get_tabs_info(self, url_or_id: str) -> Dict[str, str]:
+        doc_id = _extract_doc_id(url_or_id)
         try:
-            document = self.client.documents().get(documentId=document_id).execute()
+            document = self.client.documents().get(documentId=doc_id).execute()
             tabs = document.get('tabs', [])
             tab_dict = {}
             
@@ -131,10 +114,11 @@ class GoogleDocsService:
             logger.error(f"An unexpected error occurred: {e}")
             return {}
 
-    def read_specific_tab(self, document_id: str, target_tab_id: str) -> Optional[str]:
+    def read_specific_tab(self, url_or_id: str, target_tab_id: str) -> Optional[str]:
+        doc_id = _extract_doc_id(url_or_id)
         try:
             document = self.client.documents().get(
-                documentId=document_id,
+                documentId=doc_id,
                 includeTabsContent=True
             ).execute()
             
@@ -157,10 +141,11 @@ class GoogleDocsService:
             logger.error(f"Failed to read specific tab: {e}")
             return None
 
-    def read_document(self, document_id: str) -> Optional[str]:
+    def read_document(self, url_or_id: str) -> Optional[str]:
+        doc_id = _extract_doc_id(url_or_id)
         try:
             document = self.client.documents().get(
-                documentId=document_id,
+                documentId=doc_id,
                 includeTabsContent=True
             ).execute()
             
@@ -207,7 +192,8 @@ class GoogleDocsService:
                 text += self._extract_text(element.get('tableOfContents', {}).get('content', []))
         return text
 
-    def append_text(self, document_id: str, text: str, tab_id: Optional[str] = None) -> bool:
+    def append_text(self, url_or_id: str, text: str, tab_id: Optional[str] = None) -> bool:
+        doc_id = _extract_doc_id(url_or_id)
         try:
             if not text.startswith('\n'):
                 text = '\n' + text
@@ -217,14 +203,15 @@ class GoogleDocsService:
                 location['tabId'] = tab_id
 
             requests = [{'insertText': {'endOfSegmentLocation': location, 'text': text}}]
-            self.client.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
+            self.client.documents().batchUpdate(documentId=doc_id, body={'requests': requests}).execute()
             logger.info("Text appended successfully.")
             return True
         except Exception as e:
             logger.error(f"Failed to append text: {e}")
             return False
 
-    def insert_text_at_start(self, document_id: str, text: str, tab_id: Optional[str] = None) -> bool:
+    def insert_text_at_start(self, url_or_id: str, text: str, tab_id: Optional[str] = None) -> bool:
+        doc_id = _extract_doc_id(url_or_id)
         try:
             if not text.endswith('\n'):
                 text = text + '\n'
@@ -234,14 +221,15 @@ class GoogleDocsService:
                 location['tabId'] = tab_id
 
             requests = [{'insertText': {'location': location, 'text': text}}]
-            self.client.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
+            self.client.documents().batchUpdate(documentId=doc_id, body={'requests': requests}).execute()
             logger.info("Text inserted at start successfully.")
             return True
         except Exception as e:
             logger.error(f"Failed to insert text: {e}")
             return False
 
-    def replace_text(self, document_id: str, search_string: str, replacement_string: str) -> bool:
+    def replace_text(self, url_or_id: str, search_string: str, replacement_string: str) -> bool:
+        doc_id = _extract_doc_id(url_or_id)
         try:
             requests = [{
                 'replaceAllText': {
@@ -249,7 +237,7 @@ class GoogleDocsService:
                     'replaceText': replacement_string
                 }
             }]
-            self.client.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
+            self.client.documents().batchUpdate(documentId=doc_id, body={'requests': requests}).execute()
             logger.info(f"Replaced all instances of '{search_string}'.")
             return True
         except Exception as e:
