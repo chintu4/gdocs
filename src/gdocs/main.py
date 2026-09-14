@@ -57,7 +57,10 @@ class GoogleDocsService:
     def get_tab_names(self, url_or_id: str) -> List[str]:
         doc_id = _extract_doc_id(url_or_id)
         try:
-            document = self.client.documents().get(documentId=doc_id).execute()
+            document = self.client.documents().get(
+                documentId=doc_id, 
+                includeTabsContent=True
+            ).execute()
             tabs = document.get('tabs', [])
             tab_names = []
             
@@ -83,7 +86,10 @@ class GoogleDocsService:
     def get_tabs_info(self, url_or_id: str) -> Dict[str, str]:
         doc_id = _extract_doc_id(url_or_id)
         try:
-            document = self.client.documents().get(documentId=doc_id).execute()
+            document = self.client.documents().get(
+                documentId=doc_id, 
+                includeTabsContent=True
+            ).execute()
             tabs = document.get('tabs', [])
             tab_dict = {}
             
@@ -202,6 +208,21 @@ class GoogleDocsService:
             logger.error(f"Failed to append text: {e}")
             return False
 
+    def append_to_tab_index(self, url_or_id: str, text: str, tab_index: int = 0) -> bool:
+        """Convenience method to append text directly to a tab by its zero-based index."""
+        tabs_info = self.get_tabs_info(url_or_id)
+        tab_ids = list(tabs_info.keys())
+        
+        if not tab_ids:
+            return self.append_text(url_or_id, text)
+            
+        if tab_index >= len(tab_ids):
+            logger.error(f"Tab index {tab_index} out of bounds. Document has {len(tab_ids)} tab(s).")
+            return False
+            
+        target_tab_id = tab_ids[tab_index]
+        return self.append_text(url_or_id, text, tab_id=target_tab_id)
+
     def insert_text_at_start(self, url_or_id: str, text: str, tab_id: Optional[str] = None) -> bool:
         doc_id = _extract_doc_id(url_or_id)
         try:
@@ -219,6 +240,21 @@ class GoogleDocsService:
         except Exception as e:
             logger.error(f"Failed to insert text: {e}")
             return False
+
+    def insert_to_tab_index(self, url_or_id: str, text: str, tab_index: int = 0) -> bool:
+        """Convenience method to insert text at the start of a tab by its zero-based index."""
+        tabs_info = self.get_tabs_info(url_or_id)
+        tab_ids = list(tabs_info.keys())
+        
+        if not tab_ids:
+            return self.insert_text_at_start(url_or_id, text)
+            
+        if tab_index >= len(tab_ids):
+            logger.error(f"Tab index {tab_index} out of bounds. Document has {len(tab_ids)} tab(s).")
+            return False
+            
+        target_tab_id = tab_ids[tab_index]
+        return self.insert_text_at_start(url_or_id, text, tab_id=target_tab_id)
 
     def replace_text(self, url_or_id: str, search_string: str, replacement_string: str) -> bool:
         doc_id = _extract_doc_id(url_or_id)
