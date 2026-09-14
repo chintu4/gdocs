@@ -80,11 +80,11 @@ class GoogleDocsService:
                 
         return text
 
-def extract_doc_id(url_or_id: str) -> str:
-    if not url_or_id:
-        raise ValueError("Provided URL or ID is empty.")
-    match = re.search(r"/d/([a-zA-Z0-9-_]+)", url_or_id)
-    return match.group(1) if match else url_or_id
+    def extract_doc_id(url_or_id: str) -> str:
+        if not url_or_id:
+            raise ValueError("Provided URL or ID is empty.")
+        match = re.search(r"/d/([a-zA-Z0-9-_]+)", url_or_id)
+        return match.group(1) if match else url_or_id
 
 # # Usage Execution
 # if __name__ == "__main__":
