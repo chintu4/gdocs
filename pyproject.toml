@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gdocs"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
   { name="Chintu Sharma", email="chintusharma3388@gmail.com" },
 ]
