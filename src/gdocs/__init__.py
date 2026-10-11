@@ -3,17 +3,11 @@
 from .main import (
     AuthStrategy,
     DefaultAuthStrategy,
-    GoogleDocsClient,
-    OAuthAuthStrategy,
-    ServiceAccountAuthStrategy,
+    GoogleDocsService,
 )
 
-__version__ = "0.1.0"
-
 __all__ = [
-    "GoogleDocsClient",
+    "GoogleDocsService",
     "AuthStrategy",
     "DefaultAuthStrategy",
-    "ServiceAccountAuthStrategy",
-    "OAuthAuthStrategy",
 ]
