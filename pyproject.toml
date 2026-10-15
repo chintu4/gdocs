@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gdocs"
-version = "0.1.2"
+version = "0.2.0"
 authors = [
   { name="Chintu Sharma", email="chintusharma3388@gmail.com" },
 ]
@@ -17,7 +17,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    # "requests>=2.31.0", # Add your dependencies here
+    "google-auth>=2.0.0",
+    "google-api-python-client>=2.0.0",
 ]
 
 [project.urls]
